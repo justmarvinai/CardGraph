@@ -27,7 +27,6 @@ interface EditorState {
   assetVersion: number;
 
   setDocument: (doc: CardGraphDocument) => void;
-  newDocument: (templateId: string, variantId: string | null) => void;
   rename: (name: string) => void;
 
   setField: (id: string, value: unknown) => void;
@@ -78,9 +77,6 @@ export const useEditor = create<EditorState>()(
       assetVersion: 0,
 
       setDocument: (doc) => set({ doc, selection: [] }),
-
-      newDocument: (templateId, variantId) =>
-        set({ doc: createDocument(templateId, variantId), selection: [] }),
 
       rename: (name) =>
         set((state) => {

@@ -48,15 +48,20 @@ export const GALLERY: GalleryEntry[] = TEMPLATES.flatMap((template): GalleryEntr
       },
     ];
   }
-  return template.variants.map((variant: TemplateVariant) => ({
-    key: `${template.id}--${variant.id}`,
-    templateId: template.id,
-    variantId: variant.id,
-    name: variant.name,
-    description: variant.description,
-    tags: template.tags,
-    preview: `/previews/${template.id}-${variant.id}.jpg`,
-  }));
+  return template.variants.map((variant: TemplateVariant) => {
+    // The gallery key is the single source for both the route and the preview
+    // filename — deriving them separately let them drift apart.
+    const key = `${template.id}--${variant.id}`;
+    return {
+      key,
+      templateId: template.id,
+      variantId: variant.id,
+      name: variant.name,
+      description: variant.description,
+      tags: template.tags,
+      preview: `/previews/${key}.jpg`,
+    };
+  });
 });
 
 export function findGalleryEntry(key: string): GalleryEntry | undefined {

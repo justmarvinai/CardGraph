@@ -125,3 +125,13 @@ describe('template layout', () => {
     expect(String(derived.changeText)).toContain('50.72%');
   });
 });
+
+describe('gallery previews', () => {
+  it('names each preview after the gallery key', () => {
+    // The generator writes `public/previews/<key>.jpg`; a path derived any
+    // other way silently falls back to a placeholder card in the gallery.
+    for (const entry of GALLERY) {
+      expect(entry.preview, entry.key).toBe(`/previews/${entry.key}.jpg`);
+    }
+  });
+});

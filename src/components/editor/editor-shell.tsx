@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { useEditor, useTemporal } from '@/store/editor';
 import { useNodes } from '@/store/use-nodes';
-import { loadDocument, saveDocument } from '@/lib/storage';
+import { loadDocument } from '@/lib/storage';
+import { createDocument } from '@/engine/document';
 import { importImageFile } from '@/engine/assets';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipProvider } from '@/components/ui/tooltip';
@@ -39,7 +40,6 @@ type RightTab = 'properties' | 'layers';
 
 export function EditorShell({ templateId, variantId }: { templateId: string; variantId: string | null }) {
   const doc = useEditor((s) => s.doc);
-  const newDocument = useEditor((s) => s.newDocument);
   const setDocument = useEditor((s) => s.setDocument);
   const rename = useEditor((s) => s.rename);
   const selection = useEditor((s) => s.selection);
@@ -63,28 +63,21 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
   const [historyTick, setHistoryTick] = useState(0);
   useEffect(() => useTemporal.subscribe(() => setHistoryTick((t) => t + 1)), []);
 
-  // Restore the last document for this template, or start a fresh one.
+  // Restore the last document for this template, or start a fresh one. The
+  // document carries the `last:` key as its own id, so the store's autosave is
+  // the only writer — otherwise every edit would leave a second orphaned record.
   useEffect(() => {
     let cancelled = false;
+    const key = `last:${templateId}:${variantId ?? 'default'}`;
     void (async () => {
-      const stored = await loadDocument(`last:${templateId}:${variantId ?? 'default'}`);
+      const stored = await loadDocument(key);
       if (cancelled) return;
-      if (stored) setDocument(stored);
-      else newDocument(templateId, variantId);
+      setDocument(stored ?? { ...createDocument(templateId, variantId), id: key });
     })();
     return () => {
       cancelled = true;
     };
-  }, [templateId, variantId, newDocument, setDocument]);
-
-  // Keep a per-template "last used" snapshot so a reload does not lose work.
-  useEffect(() => {
-    if (doc.templateId !== templateId) return;
-    const timer = setTimeout(() => {
-      void saveDocument({ ...doc, id: `last:${templateId}:${variantId ?? 'default'}` });
-    }, 900);
-    return () => clearTimeout(timer);
-  }, [doc, templateId, variantId]);
+  }, [templateId, variantId, setDocument]);
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -151,24 +144,26 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
     <TooltipProvider>
       <div className="flex h-dvh flex-col overflow-hidden bg-ink-950">
         {/* ── Top bar ─────────────────────────────────────────────────── */}
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-white/7 bg-ink-900/80 px-3 backdrop-blur">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-white/7 bg-ink-900/80 px-2 backdrop-blur sm:gap-3 sm:px-3">
           <Link
             href="/app"
-            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] text-ink-300 transition-colors hover:bg-white/6 hover:text-white"
+            aria-label="Back to templates"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] text-ink-300 transition-colors hover:bg-white/6 hover:text-white"
           >
-            <ArrowLeft className="size-4" /> Templates
+            <ArrowLeft className="size-4" />
+            <span className="hidden sm:inline">Templates</span>
           </Link>
 
-          <div className="h-5 w-px bg-white/8" />
+          <div className="hidden h-5 w-px bg-white/8 sm:block" />
 
           <input
             value={doc.name}
             onChange={(e) => rename(e.target.value)}
             aria-label="Design name"
-            className="min-w-0 max-w-[220px] flex-1 rounded-lg bg-transparent px-2 py-1.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/5 focus:bg-white/8"
+            className="min-w-0 flex-1 rounded-lg bg-transparent px-2 py-1.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/5 focus:bg-white/8 sm:max-w-[220px]"
           />
 
-          <div className="flex items-center gap-0.5">
+          <div className="flex shrink-0 items-center gap-0.5">
             <Tooltip content="Undo (⌘Z)">
               <Button variant="ghost" size="icon" onClick={() => undo()} disabled={pastStates.length === 0} aria-label="Undo">
                 <Undo2 className="size-4" />
@@ -181,17 +176,26 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
             </Tooltip>
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <Tooltip content="Add a text box">
-              <Button variant="toolbar" size="icon" onClick={addTextNode} aria-label="Add text">
-                <Type className="size-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Add an image">
-              <Button variant="toolbar" size="icon" onClick={() => fileRef.current?.click()} aria-label="Add image">
-                <ImagePlus className="size-4" />
-              </Button>
-            </Tooltip>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Wrapped rather than class-toggled: `hidden` on the Button would
+                have to out-specify its own `inline-flex` base class. */}
+            <div className="hidden items-center gap-1.5 sm:flex sm:gap-2">
+              <Tooltip content="Add a text box">
+                <Button variant="toolbar" size="icon" onClick={addTextNode} aria-label="Add text">
+                  <Type className="size-4" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Add an image">
+                <Button
+                  variant="toolbar"
+                  size="icon"
+                  onClick={() => fileRef.current?.click()}
+                  aria-label="Add image"
+                >
+                  <ImagePlus className="size-4" />
+                </Button>
+              </Tooltip>
+            </div>
             <input
               ref={fileRef}
               type="file"
@@ -207,7 +211,7 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
                 <Bookmark className="size-4" />
               </Button>
             </Tooltip>
-            <Button variant="primary" onClick={() => setExportOpen(true)}>
+            <Button variant="primary" size="sm" className="sm:h-10 sm:px-4 sm:text-sm" onClick={() => setExportOpen(true)}>
               <Download className="size-4" /> Export
             </Button>
           </div>
@@ -237,10 +241,10 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
           </aside>
 
           {/* ── Canvas ────────────────────────────────────────────────── */}
-          <main className="relative min-w-0 flex-1">
+          <main className="relative min-w-0 flex-1 pb-[60px] lg:pb-0">
             <EditorCanvas playing={playing} onViewport={handleViewport} onReady={handleReady} />
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-3 sm:p-4">
               <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-white/8 bg-ink-900/85 p-1 shadow-panel backdrop-blur">
                 <Tooltip content="Zoom out">
                   <Button

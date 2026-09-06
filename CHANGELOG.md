@@ -38,6 +38,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
   `scripts/render-placeholders.mjs`. No copyrighted card images ship.
 - Vitest coverage for chart scales and number/date formatting.
 
+### Changed
+- The app now builds as a **static export** (`output: 'export'` → `out/`).
+  CardGraph has no server-side anything, so the deploy is plain files with no
+  serverless functions at all — which is both the right shape for Vercel Hobby
+  and what the architecture always described.
+
 ### Fixed
 - Stale Konva layers ghosting under the canvas after a theme or format change:
   `stage.getLayers()` returns the live child array, so destroying while

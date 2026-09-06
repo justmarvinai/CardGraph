@@ -58,7 +58,7 @@ look finished out of the box".
 | Package manager | **pnpm** | Fast, strict. |
 | Lint / format | ESLint (next config) + Prettier | Standard. |
 | Tests | **Vitest** for pure logic (chart scales, number formatting, layout math). Playwright only for one export smoke test if time allows. | Keep tests where bugs actually hide. |
-| Hosting | **Vercel Hobby**, static + client-side only, no API routes, no edge functions, no image optimisation of user content | Free plan limits respected. |
+| Hosting | **Vercel Hobby**, built as a static export (`output: 'export'`) — no API routes, no serverless or edge functions, no image optimisation of user content | Free plan limits respected; the deploy is plain files. |
 
 Nothing else gets added without a reason written in a commit message.
 
@@ -150,7 +150,8 @@ pnpm dev          # http://localhost:3000
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm build        # must pass before every push to main
+pnpm build        # static export into out/ — must pass before every push to main
+pnpm serve        # serve out/ on :3210, as a static host would
 ```
 
 ## 8. Adding a template (summary; full guide in `docs/TEMPLATES.md`)

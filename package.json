@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "serve": "node scripts/serve.mjs out 3210",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

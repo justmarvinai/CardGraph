@@ -20,18 +20,20 @@ pnpm dev          # http://localhost:3000
 |---|---|
 | `pnpm dev` | Development server |
 | `pnpm build` | Production build (must pass before every push to `main`) |
-| `pnpm start` | Serve the production build |
+| `pnpm serve` | Serve the static export on :3210 (what the e2e scripts use) |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` | Vitest (chart scales, formatting) |
 | `pnpm placeholders` | Regenerate the neutral placeholder card art |
-| `pnpm previews` | Regenerate `public/previews/*.jpg` (needs `pnpm start` running on :3210) |
+| `pnpm previews` | Regenerate `public/previews/*.jpg` (needs `pnpm serve` running) |
 
 ## Deploying
 
-The app is a static Next.js site with no API routes, sized for the Vercel Hobby
-plan. Import the repository in Vercel and accept the defaults — `vercel.json`
-pins the framework, pnpm and the cache headers for fonts and previews.
+The app builds to a **static export** (`output: 'export'` → `out/`): plain HTML,
+JS and assets, with no serverless functions and nothing running on a server.
+Import the repository in Vercel and accept the defaults — `vercel.json` sets the
+framework and the cache headers for fonts and previews; everything else is
+detected. The same output will drop onto any static host.
 
 ## Where things live
 

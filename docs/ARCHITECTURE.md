@@ -1,7 +1,8 @@
 # Architecture
 
 Everything runs in the browser. There is no server, no database, no API.
-Vercel only serves static files and the Next.js pages.
+The build is a **static export** (`output: 'export'`), so a deploy is plain
+HTML, JS and assets — no serverless functions, nothing executing on a host.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐

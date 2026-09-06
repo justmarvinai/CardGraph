@@ -2,7 +2,7 @@
  * End-to-end editor smoke test: selection, dragging, undo, palette, theme,
  * format switching, live chart edits and presets, driven through the real UI.
  *
- * Usage: pnpm build && pnpm start -p 3210 & node scripts/e2e-editor.mjs <outDir>
+ * Usage: pnpm build && pnpm serve & node scripts/e2e-editor.mjs <outDir>
  */
 import { chromium } from 'playwright';
 const dir = process.argv[2];

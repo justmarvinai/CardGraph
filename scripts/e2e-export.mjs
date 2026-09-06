@@ -2,7 +2,7 @@
  * End-to-end export smoke test: drives the real editor, uploads a card and
  * exports every format, so the pipeline is checked the way a user meets it.
  *
- * Usage: pnpm build && pnpm start -p 3210 & node scripts/e2e-export.mjs <outDir>
+ * Usage: pnpm build && pnpm serve & node scripts/e2e-export.mjs <outDir>
  */
 import { chromium } from 'playwright';
 import { statSync } from 'node:fs';
@@ -36,8 +36,17 @@ async function exportAs(label) {
   const path = `${out}/${download.suggestedFilename()}`;
   await download.saveAs(path);
   console.log(`✓ ${label.padEnd(4)} → ${download.suggestedFilename()} ${(statSync(path).size / 1024).toFixed(0)} KB`);
+  await closeDialog();
+}
+
+/**
+ * Radix marks the rest of the page `aria-hidden` while a dialog is open, so
+ * role-based locators stay unmatchable until it has actually unmounted.
+ */
+async function closeDialog() {
+  if (!(await page.locator('[role=dialog]').count())) return;
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(400);
+  await page.locator('[role=dialog]').waitFor({ state: 'detached', timeout: 15000 });
 }
 
 await exportAs('PNG');
@@ -53,8 +62,7 @@ console.log('animation: hover');
 await exportAs('GIF');
 // This browser may have no H.264 encoder; the dialog then offers WebM instead.
 const videoLabel = (await page.getByRole('button', { name: /^MP4/ }).count()) ? 'MP4' : 'WEBM';
-await page.keyboard.press('Escape');
-await page.waitForTimeout(300);
+await closeDialog();
 await exportAs(videoLabel);
 
 await browser.close();

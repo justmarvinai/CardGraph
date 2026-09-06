@@ -2,7 +2,7 @@
  * Renders every gallery entry into `public/previews/<key>.jpg` using the real
  * engine and the neutral placeholder slabs — never a copyrighted card image.
  *
- * Usage: pnpm build && pnpm start -p 3210 & node scripts/render-previews.mjs
+ * Usage: pnpm build && pnpm serve & node scripts/render-previews.mjs
  */
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';

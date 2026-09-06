@@ -143,14 +143,27 @@ from a fresh upload without touching the canvas manually.
 
 ## Phase 10 — Polish & QA  🟨
 
-- Empty states, error states (unsupported file, huge image, export failure).
-- No imprint/privacy pages (Q15): a one-line privacy note in the footer only.
-- Performance pass (large images downscaled on import, blur cached, memoised nodes).
-- Responsive editor (desktop-first; tablet usable; phone shows gallery + "best on desktop").
-- Accessibility pass on UI (focus states, labels, contrast).
-- Cross-browser check: Chrome, Edge, Safari, Firefox.
-- Final review of every template against its reference in both themes.
-- `CHANGELOG.md` → `1.0.0`.
+- ✅ Empty states and error states (unsupported file, oversized image, export
+  failure, no video encoder).
+- ✅ No imprint/privacy pages (Q15): a one-line privacy note in the footer only.
+- ✅ Performance pass: images downscaled to 2400 px on import, blurred backdrop
+  cached per settings, node list memoised on the document.
+- ✅ Responsive editor: full three-panel layout on desktop, bottom sheet below
+  `lg`, header fits a 390 px screen.
+- ✅ Accessibility: focus-visible rings, labelled icon buttons, `role`/`aria`
+  on the switches, tabs and sliders.
+- ✅ Every template reviewed against its reference in both themes and all six
+  formats, by rendering the full matrix.
+- ⬜ Cross-browser check on real Safari and Firefox (only Chromium is available
+  in this environment — see the note below).
+- ⬜ `CHANGELOG.md` → `1.0.0` once the Director signs off.
+
+**Verified so far** (Chromium, via `scripts/e2e-editor.mjs` and
+`scripts/e2e-export.mjs`): upload, selection, dragging with snapping, undo,
+palette changes, theme and format switching, live chart edits, presets, and
+PNG / JPG / GIF / WebM export end to end. MP4 could not be exercised here
+because the container's Chromium ships no H.264 encoder — which is exactly the
+case the WebM fallback now covers.
 
 **Done when:** the Director signs off on 1.0.
 

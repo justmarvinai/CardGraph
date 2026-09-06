@@ -7,6 +7,7 @@ import {
   ArrowLeft, Bookmark, Download, ImagePlus, Layers, Maximize2, Palette, Play,
   Redo2, Sparkles, SlidersHorizontal, Type, Undo2, ZoomIn, ZoomOut,
 } from 'lucide-react';
+import { useStore } from 'zustand';
 import { useEditor, useTemporal } from '@/store/editor';
 import { useNodes } from '@/store/use-nodes';
 import { loadDocument } from '@/lib/storage';
@@ -59,9 +60,11 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
   const canvasRef = useRef<CanvasHandle | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const { undo, redo, pastStates, futureStates } = useTemporal.getState();
-  const [historyTick, setHistoryTick] = useState(0);
-  useEffect(() => useTemporal.subscribe(() => setHistoryTick((t) => t + 1)), []);
+  // Subscribed rather than read once: the temporal store is a vanilla zustand
+  // store, so the buttons need `useStore` to track history depth reactively.
+  const canUndo = useStore(useTemporal, (s) => s.pastStates.length > 0);
+  const canRedo = useStore(useTemporal, (s) => s.futureStates.length > 0);
+  const { undo, redo } = useTemporal.getState();
 
   // Restore the last document for this template, or start a fresh one. The
   // document carries the `last:` key as its own id, so the store's autosave is
@@ -165,12 +168,12 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
 
           <div className="flex shrink-0 items-center gap-0.5">
             <Tooltip content="Undo (⌘Z)">
-              <Button variant="ghost" size="icon" onClick={() => undo()} disabled={pastStates.length === 0} aria-label="Undo">
+              <Button variant="ghost" size="icon" onClick={() => undo()} disabled={!canUndo} aria-label="Undo">
                 <Undo2 className="size-4" />
               </Button>
             </Tooltip>
             <Tooltip content="Redo (⇧⌘Z)">
-              <Button variant="ghost" size="icon" onClick={() => redo()} disabled={futureStates.length === 0} aria-label="Redo">
+              <Button variant="ghost" size="icon" onClick={() => redo()} disabled={!canRedo} aria-label="Redo">
                 <Redo2 className="size-4" />
               </Button>
             </Tooltip>
@@ -330,7 +333,6 @@ export function EditorShell({ templateId, variantId }: { templateId: string; var
 
         <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
         <PresetsDialog open={presetsOpen} onOpenChange={setPresetsOpen} />
-        <span className="hidden">{historyTick}</span>
       </div>
     </TooltipProvider>
   );

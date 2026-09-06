@@ -87,13 +87,14 @@ function build(ctx: BuildContext): Node[] {
       }),
     );
 
+    const slabWidth = Math.min(columnWidth, slabHeight * 0.74);
     nodes.push(
       imageNode({
         id: i === 0 ? 'card' : 'card-right',
         name: `${side === 'left' ? 'Left' : 'Right'} card`,
-        x,
+        x: x + (columnWidth - slabWidth) / 2,
         y: bodyTop,
-        width: columnWidth,
+        width: slabWidth,
         height: slabHeight,
         role: 'card',
         fit: 'contain',

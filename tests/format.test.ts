@@ -6,6 +6,7 @@ import {
   formatDate,
   formatNumber,
   formatPercent,
+  formatTick,
   parseLooseNumber,
   percentChange,
   spanLabel,
@@ -67,5 +68,12 @@ describe('parseLooseNumber', () => {
   it('reads what a user pastes', () => {
     expect(parseLooseNumber('$1,725', DEFAULT_FORMATTING)).toBe(1725);
     expect(parseLooseNumber('€1.725,50', eu)).toBe(1725.5);
+  });
+});
+
+describe('formatTick', () => {
+  it('never prints a currency symbol on an axis', () => {
+    expect(formatTick(3600, DEFAULT_FORMATTING)).toBe('3,600');
+    expect(formatTick(3600, eu)).toBe('3.600');
   });
 });

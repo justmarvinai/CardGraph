@@ -18,7 +18,7 @@ Phases are ordered so that `main` is deployable after each one.
 
 ---
 
-## Phase 1 — Scaffold & foundation  ⬜
+## Phase 1 — Scaffold & foundation  ✅
 
 - Next.js 15 + TypeScript + Tailwind v4 + pnpm, ESLint/Prettier, Vitest.
 - Design tokens (dark UI, lime accent as *default*), base UI primitives (button,
@@ -31,7 +31,7 @@ Phases are ordered so that `main` is deployable after each one.
 
 ---
 
-## Phase 2 — Editor engine  ⬜
+## Phase 2 — Editor engine  ✅
 
 - Document model + Zustand store + undo/redo.
 - Konva stage: zoom (fit / 50–400 %), pan, rulers-free clean canvas, safe-area.
@@ -48,7 +48,7 @@ Phases are ordered so that `main` is deployable after each one.
 
 ---
 
-## Phase 3 — Card image & background pipeline  ⬜
+## Phase 3 — Card image & background pipeline  ✅
 
 - Upload (drag & drop, file picker, paste) → stored in IndexedDB.
 - Auto-trim transparent padding for PNG slab cut-outs.
@@ -63,7 +63,7 @@ Phases are ordered so that `main` is deployable after each one.
 
 ---
 
-## Phase 4 — Template system + first template  ⬜
+## Phase 4 — Template system + first template  ✅
 
 - Template definition API (`build`, `fields`, `defaults`, per-format layout).
 - "Content" panel generated from `fields` (the simple, form-driven editing path).
@@ -81,7 +81,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 5 — Remaining launch templates  ⬜
+## Phase 5 — Remaining launch templates  ✅
 
 - `grade-comparison` (CGC vs PSA, pop counts, latest sales, price difference).
 - `sale-comparison` (same card, previous vs latest sale over time).
@@ -93,7 +93,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 6 — Formats  ⬜
+## Phase 6 — Formats  ✅
 
 - Format switcher (4:5, 1:1, 9:16, 16:9, 4:3, 3:4) with per-format layout
   in every template.
@@ -103,7 +103,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 7 — Export  ⬜
+## Phase 7 — Export  ✅
 
 - PNG / JPG at 1x and 2x, quality slider for JPG, transparent PNG off by design
   (background is always rendered).
@@ -118,7 +118,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 8 — Presets & persistence  ⬜
+## Phase 8 — Presets & persistence  ✅
 
 - Autosave current document to IndexedDB, restore on reload.
 - "My presets": save current document as a named preset (layout + styles +
@@ -130,7 +130,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 9 — Landing page  ⬜
+## Phase 9 — Landing page  ✅
 
 - Minimal, premium single page: hero with animated template showcase, template
   gallery, three-step "how it works", feature grid (formats, themes, animation,
@@ -141,7 +141,7 @@ from a fresh upload without touching the canvas manually.
 
 ---
 
-## Phase 10 — Polish & QA  ⬜
+## Phase 10 — Polish & QA  🟨
 
 - Empty states, error states (unsupported file, huge image, export failure).
 - No imprint/privacy pages (Q15): a one-line privacy note in the footer only.

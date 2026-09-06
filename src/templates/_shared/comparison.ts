@@ -28,7 +28,7 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
   const landscape = m.archetype === 'landscape';
 
   const headlineSize = m.width * (landscape ? 0.1 : tall ? 0.15 : 0.155);
-  const headTop = m.height * (tall ? 0.04 : landscape ? 0.05 : 0.03);
+  const headTop = Math.max(m.height * (tall ? 0.04 : landscape ? 0.05 : 0.03), headlineSize * 0.19);
   const centred = options.header === 'captions';
 
   nodes.push(
@@ -107,14 +107,18 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
 
   const slabHeight = statsTop - slabTop - m.height * 0.03;
 
+  // Cap the card box at what a `contain`-fit card can actually fill, so a wide
+  // format does not leave a gutter of dead space beside each slab.
+  const slabWidth = Math.min(columnWidth, slabHeight * 0.74);
+
   [0, 1].forEach((i) => {
     nodes.push(
       imageNode({
         id: i === 0 ? 'card' : 'card-right',
         name: i === 0 ? 'Left card' : 'Right card',
-        x: m.left + (columnWidth + gutter) * i,
+        x: m.left + (columnWidth + gutter) * i + (columnWidth - slabWidth) / 2,
         y: slabTop,
-        width: columnWidth,
+        width: slabWidth,
         height: slabHeight,
         role: 'card',
         fit: 'contain',

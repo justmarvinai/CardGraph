@@ -35,7 +35,7 @@ function build(ctx: BuildContext): Node[] {
   );
 
   const headlineSize = m.width * (landscape ? 0.1 : tall ? 0.15 : 0.155);
-  const headTop = m.height * (tall ? 0.04 : 0.028);
+  const headTop = Math.max(m.height * (tall ? 0.04 : 0.028), headlineSize * 0.19);
   nodes.push(
     headline({
       x: m.left,
@@ -76,7 +76,7 @@ function build(ctx: BuildContext): Node[] {
   const statsTop = m.height - statsHeight - m.height * (tall ? 0.05 : 0.035);
   const slabTop = sublineY + sublineSize * 2.2;
   const slabHeight = statsTop - slabTop - m.height * 0.035;
-  const slabWidth = Math.min(m.contentWidth * (landscape ? 0.42 : 0.72), slabHeight * 0.72);
+  const slabWidth = Math.min(m.contentWidth * (landscape ? 0.42 : 0.72), slabHeight * 0.74);
 
   nodes.push(
     imageNode({

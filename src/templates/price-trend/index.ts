@@ -42,14 +42,82 @@ function build(ctx: BuildContext): Node[] {
   const landscape = m.archetype === 'landscape';
   const square = m.archetype === 'square';
 
+  // ── Layout ────────────────────────────────────────────────────────────────
+  // Worked out first, then emitted, because the landscape arrangement puts the
+  // header inside the right-hand column rather than across the top.
+  const statsHeight = m.height * (tall ? 0.13 : landscape ? 0.19 : 0.165);
+  const statsTop = m.height - statsHeight - m.height * (tall ? 0.055 : 0.032);
+
+  let headBox: { x: number; y: number; w: number };
+  let headlineSize: number;
+  let sublineSize: number;
+  let slab: { x: number; y: number; w: number; h: number };
+  let chart: { x: number; y: number; w: number; h: number };
+
+  if (landscape) {
+    // A portrait card in a wide frame: give the card the full height on the
+    // left and stack the header and chart down the right.
+    const top = m.height * 0.055;
+    const bodyHeight = statsTop - top - m.height * 0.035;
+    const gap = m.contentWidth * 0.035;
+    const slabW = Math.min(m.contentWidth * 0.3, bodyHeight * 0.74);
+    const rightX = m.left + slabW + gap;
+    const rightW = m.right - rightX;
+
+    headlineSize = rightW * 0.135;
+    sublineSize = rightW * 0.036;
+    const headerHeight = headlineSize * 1.04 + sublineSize * 2.1;
+
+    slab = { x: m.left, y: top, w: slabW, h: bodyHeight };
+    headBox = { x: rightX, y: top, w: rightW };
+    chart = {
+      x: rightX,
+      y: top + headerHeight,
+      w: rightW,
+      h: bodyHeight - headerHeight,
+    };
+  } else {
+    headlineSize = m.width * (tall ? 0.16 : 0.175);
+    sublineSize = m.width * 0.037;
+    const headTop = Math.max(m.height * (tall ? 0.035 : 0.026), headlineSize * 0.19);
+    headBox = { x: m.left, y: headTop, w: m.contentWidth };
+
+    const bodyTop = headTop + headlineSize * 1.03 + sublineSize * (tall ? 2.1 : 1.9);
+    const bodyHeight = statsTop - bodyTop - m.height * 0.025;
+
+    if (tall) {
+      // 9:16 — the card leads, the chart sits underneath at full width.
+      const slabH = bodyHeight * 0.56;
+      const slabW = Math.min(m.contentWidth * 0.88, slabH * 0.74);
+      slab = { x: m.left + (m.contentWidth - slabW) / 2, y: bodyTop, w: slabW, h: slabH };
+      chart = {
+        x: m.left,
+        y: bodyTop + slabH + bodyHeight * 0.06,
+        w: m.contentWidth,
+        h: bodyHeight * 0.38,
+      };
+    } else {
+      const gap = m.contentWidth * 0.03;
+      // The card is `contain`-fit, so a column wider than its aspect ratio only
+      // leaves dead space beside it.
+      const slabW = Math.min(m.contentWidth * 0.475, bodyHeight * 0.74);
+      const chartH = bodyHeight * (square ? 0.92 : 0.95);
+      slab = { x: m.left, y: bodyTop, w: slabW, h: bodyHeight };
+      chart = {
+        x: m.left + slabW + gap,
+        y: bodyTop + (bodyHeight - chartH) * 0.35,
+        w: m.right - (m.left + slabW + gap),
+        h: chartH,
+      };
+    }
+  }
+
   // ── Header ────────────────────────────────────────────────────────────────
-  const headlineSize = m.width * (landscape ? 0.115 : tall ? 0.16 : 0.175);
-  const headTop = m.height * (tall ? 0.035 : landscape ? 0.045 : 0.026);
   nodes.push(
     headline({
-      x: m.left,
-      y: headTop,
-      width: m.contentWidth,
+      x: headBox.x,
+      y: headBox.y,
+      width: headBox.w,
       fontSize: headlineSize,
       color: palette.accent,
       text: str(data, 'title', 'CARD NAME'),
@@ -57,13 +125,15 @@ function build(ctx: BuildContext): Node[] {
     }),
   );
 
-  const sublineSize = m.width * (landscape ? 0.026 : 0.037);
-  const sublineY = headTop + headlineSize * 1.03;
   nodes.push(
     ...inlineRun(
       [
         { id: 'subtitle-grade', text: str(data, 'grade'), color: palette.textPrimary },
-        { id: 'subtitle-dot', text: str(data, 'grade') && str(data, 'set') ? '·' : '', color: palette.textSecondary },
+        {
+          id: 'subtitle-dot',
+          text: str(data, 'grade') && str(data, 'set') ? '·' : '',
+          color: palette.textSecondary,
+        },
         { id: 'subtitle-set', text: str(data, 'set'), color: palette.textPrimary },
         {
           id: 'subtitle-number',
@@ -73,9 +143,9 @@ function build(ctx: BuildContext): Node[] {
         },
       ].filter((p) => p.text),
       {
-        x: m.left,
-        y: sublineY,
-        width: m.contentWidth,
+        x: headBox.x,
+        y: headBox.y + headlineSize * 1.03,
+        width: headBox.w,
         fontSize: sublineSize,
         fontFamily: 'Montserrat',
         fontWeight: 500,
@@ -85,35 +155,7 @@ function build(ctx: BuildContext): Node[] {
     ),
   );
 
-  // ── Body: slab + chart ────────────────────────────────────────────────────
-  const bodyTop = sublineY + sublineSize * (tall ? 2.1 : 1.9);
-  const statsHeight = m.height * (tall ? 0.13 : landscape ? 0.2 : 0.165);
-  const statsTop = m.height - statsHeight - m.height * (tall ? 0.055 : 0.03);
-  const bodyHeight = statsTop - bodyTop - m.height * 0.025;
-
-  let slab: { x: number; y: number; w: number; h: number };
-  let chart: { x: number; y: number; w: number; h: number };
-
-  if (tall) {
-    // 9:16 — the card leads, the chart sits underneath at full width.
-    const slabH = bodyHeight * 0.56;
-    const chartH = bodyHeight * 0.38;
-    slab = { x: m.left + m.contentWidth * 0.06, y: bodyTop, w: m.contentWidth * 0.88, h: slabH };
-    chart = { x: m.left, y: bodyTop + slabH + bodyHeight * 0.06, w: m.contentWidth, h: chartH };
-  } else {
-    const gap = m.contentWidth * (landscape ? 0.04 : 0.03);
-    const slabW = m.contentWidth * (landscape ? 0.36 : 0.475);
-    const chartW = m.contentWidth - slabW - gap;
-    const chartH = bodyHeight * (square ? 0.92 : 0.95);
-    slab = { x: m.left, y: bodyTop, w: slabW, h: bodyHeight };
-    chart = {
-      x: m.left + slabW + gap,
-      y: bodyTop + (bodyHeight - chartH) * 0.35,
-      w: chartW,
-      h: chartH,
-    };
-  }
-
+  // ── Card and chart ────────────────────────────────────────────────────────
   nodes.push(
     imageNode({
       id: 'card',
@@ -148,8 +190,8 @@ function build(ctx: BuildContext): Node[] {
       padding: {
         top: 0.08,
         right: 0.06,
-        bottom: tall ? 0.16 : 0.13,
-        left: tall ? 0.13 : 0.19,
+        bottom: tall ? 0.16 : landscape ? 0.15 : 0.13,
+        left: tall ? 0.13 : landscape ? 0.14 : 0.19,
       },
     }),
   );
@@ -161,7 +203,6 @@ function build(ctx: BuildContext): Node[] {
   const endValue = rows.length ? last.value : num(data, 'endPrice');
   const change = percentChange(startValue, endValue);
   const rising = change >= 0;
-  const changeColor = rising ? palette.positive : palette.negative;
 
   const columns: StatColumn[] = [
     {
@@ -179,8 +220,9 @@ function build(ctx: BuildContext): Node[] {
     {
       id: 'stat-change',
       label: str(data, 'changeLabel', 'PRICE CHANGE'),
-      value: str(data, 'changeText') || `${rising ? '▲ ' : '▼ '}${formatPercent(change, formatting)}`,
-      valueColor: changeColor,
+      value:
+        str(data, 'changeText') || `${rising ? '▲ ' : '▼ '}${formatPercent(change, formatting)}`,
+      valueColor: rising ? palette.positive : palette.negative,
     },
     {
       id: 'stat-end',

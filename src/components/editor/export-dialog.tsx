@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Check, Download, Loader2 } from 'lucide-react';
 import { FORMATS } from '@/lib/types';
 import { useEditor } from '@/store/editor';
-import { runExport, download, formatBytes, supportsMp4, supportsWebm } from '@/export';
+import { runExport, download, formatBytes, canExportMp4, supportsWebm } from '@/export';
 import type { ExportFormat, ExportProgress, ExportResult } from '@/export/types';
 import { frameCount } from '@/engine/animation';
 import { Dialog } from '@/components/ui/dialog';
@@ -22,14 +22,25 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const [progress, setProgress] = useState<ExportProgress | null>(null);
   const [result, setResult] = useState<ExportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [videoSupport, setVideoSupport] = useState<{ mp4: boolean; webm: boolean }>({ mp4: true, webm: true });
+  const [videoSupport, setVideoSupport] = useState<{ mp4: boolean; webm: boolean }>({
+    mp4: true,
+    webm: true,
+  });
 
   const animated = doc.animation.preset !== 'none';
   const spec = FORMATS[doc.format];
 
+  // Probing is asynchronous: several browsers expose `VideoEncoder` but ship no
+  // H.264 encoder, and only `isConfigSupported` tells the truth.
   useEffect(() => {
-    setVideoSupport({ mp4: supportsMp4(), webm: supportsWebm() });
-  }, []);
+    let cancelled = false;
+    void canExportMp4(doc).then((mp4) => {
+      if (!cancelled) setVideoSupport({ mp4, webm: supportsWebm() });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [doc]);
 
   useEffect(() => {
     if (!animated && (format === 'gif' || format === 'mp4')) setFormat('png');

@@ -62,16 +62,24 @@ per node or for the whole document.
 ```ts
 interface BaseNode { id; type; x; y; width; height; rotation; opacity; locked; visible; name }
 
-TextNode    { text; fontFamily; fontWeight; fontSize; letterSpacing; lineHeight;
-              align; color; uppercase; shadow?: Shadow; glow?: Glow; maxWidth?; autoFit? }
-ImageNode   { src (asset id); fit: 'contain'|'cover'; radius; shadow?; role?: 'card'|'extra' }
-ChartNode   { rows: {label: string; value: number}[]; stroke; strokeWidth; smooth;
-              glow; yTicks: 'auto'|number; yFormat: NumberFormat; xLabelStyle; grid?: boolean }
-StatNode    { label; value; valueColor; trend?: 'up'|'down'|null; badge?: BadgeRef; caption? }
-DividerNode { orientation; color; thickness }
-BadgeNode   { kind: 'builtin'|'text'|'image'; id/text/assetId; size }
-GroupNode   { children: Node[] }   // used for stat rows so they move together
+TextNode    { text; fontFamily; fontWeight; fontSize; letterSpacing; lineHeight; align;
+              verticalAlign; color; transform; shadow: Shadow | null; autoFit; minFontSize }
+ImageNode   { assetId; fit: 'contain'|'cover'; radius; shadow; role: 'card'|'extra'; flipX }
+ChartNode   { rows: {id; label; value}[]; strokeMode: 'auto'|'custom'; stroke; strokeWidth;
+              smooth; glow; panelFill; panelRadius; panelOpacity; showPanel; showYAxis;
+              showXAxis; showGrid; gridColor; axisColor; axisFontFamily; axisFontSize;
+              tickCount; padding }
+DividerNode { orientation; color; thickness; fade }
+BadgeNode   { kind: 'builtin'|'text'|'image'; badgeId; text; assetId; color; caption; … }
 ```
+
+**Two deviations from the original plan**, both taken to keep the engine small:
+
+- There is no `stat` node. The bottom band is ordinary text, divider and badge
+  nodes emitted by `statsRow()`. Users get the same freedom to move and restyle
+  each piece, and the renderer keeps one code path per primitive.
+- There is no `group` node. Multi-select covers moving several elements at once,
+  which is what grouping would have been used for.
 
 `bindings` live in the template: e.g. `stat-change.value ← percentChange(chart.rows)`.
 A binding is active until the user types directly into the bound field; the
@@ -80,8 +88,14 @@ Content panel shows a lock/unlock icon to restore the binding.
 ## 3. Rendering
 
 - One Konva `Stage`, three `Layer`s: `background` (cached bitmap), `content`
-  (all nodes), `ui` (selection, transformer, guides). The `ui` layer is hidden
-  during export.
+  (all nodes), `ui` (selection, transformer, guides). Exports build their own
+  stage from the same `Scene`, so the `ui` layer never exists there at all.
+- Konva is driven **imperatively** rather than through react-konva: the editor
+  preview and the export call the same `renderNode()` functions, which is what
+  guarantees an export matches what the user was looking at.
+- Templates measure text with the plain 2D context (`measureText`), not Konva,
+  so `src/templates` stays independent of the renderer — and importable on the
+  server, where Konva would drag in a native `canvas` dependency.
 - Each node type has a renderer in `src/engine/nodes/*.ts` that maps a node to
   Konva shapes. Text glow/shadow use Konva `shadowColor/Blur`; the neon "lime
   glow" of headlines is a soft shadow with the same colour.
@@ -115,9 +129,14 @@ Result is cached per (assetId, format, theme, blur, strength) and drawn as one
   encoder. UI shows progress and stays responsive (`await` per frame).
 - GIF: `gifenc` in a Web Worker, 256-colour palette from the first frame,
   optional 2-colour dithering, output ≤ ~15 MB warning.
-- MP4: `VideoEncoder` (H.264 `avc1.42001f`/`avc1.4d0028`, 30 fps, bitrate
-  ~8 Mbit/s) → `mp4-muxer` → Blob. Feature-detect `VideoEncoder`; otherwise
-  `canvas.captureStream()` + `MediaRecorder` → WebM, and tell the user.
+- MP4: `VideoEncoder` → `mp4-muxer` → Blob. **The presence of `VideoEncoder` is
+  not sufficient** — several browsers (notably Chromium on Linux) expose the API
+  with no H.264 encoder behind it — so `VideoEncoder.isConfigSupported()` is
+  probed against `avc1.42E01F`, `avc1.4D0028` and `avc1.640028` before MP4 is
+  offered at all. Encoder errors arrive asynchronously and are captured, because
+  an unhandled one makes `flush()` wait forever.
+- WebM fallback: `canvas.captureStream()` + `MediaRecorder`, recorded in real
+  time over two loop passes, with a notice in the export dialog.
 
 ## 6. Storage
 
@@ -131,14 +150,24 @@ Result is cached per (assetId, format, theme, blur, strength) and drawn as one
 Presets are documents minus `id/createdAt`, with `includeImages: boolean`.
 Export/import as JSON (images embedded as base64 when included).
 
-## 7. Performance budget
+## 7. Two traps worth remembering
+
+- **Never select derived state through the store.** `resolveNodes()` returns a
+  new array each call, so `useEditor(s => s.nodes())` compares unequal on every
+  read and re-renders forever. The node list comes from `useNodes()`, memoised
+  on the document.
+- **Chart axes must not go negative for non-negative data.** A price series from
+  5 to 100 padded into a "nice" scale used to start at −50 and waste half the
+  panel; `niceScale` now clamps to zero when the data never goes below it.
+
+## 8. Performance budget
 
 - Import: images downscaled to max 2400 px on the long edge (keeps 2x export sharp).
 - Stage redraws only the layer that changed; background layer is a cached bitmap.
 - Fonts preloaded once at editor mount (`document.fonts.load`) with a loading state.
 - Export of 120 frames at 1080×1350 should finish in < 15 s on a laptop.
 
-## 8. Browser support
+## 9. Browser support
 
 Chrome / Edge / Safari 17+ / Firefox latest. MP4 export needs WebCodecs
 (Chrome, Edge, Safari 16.4+, Firefox 130+); others get WebM. Phone: gallery

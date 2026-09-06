@@ -1,11 +1,11 @@
 import type { CardGraphDocument } from '@/lib/types';
 import { exportStill } from './still';
 import { exportGif } from './gif';
-import { exportVideo, supportsMp4, supportsWebm } from './video';
+import { exportVideo, canExportMp4, hasVideoEncoder, supportsWebm } from './video';
 import type { ExportOptions, ExportResult, ProgressHandler } from './types';
 
 export * from './types';
-export { supportsMp4, supportsWebm };
+export { canExportMp4, hasVideoEncoder, supportsWebm };
 
 export async function runExport(
   doc: CardGraphDocument,

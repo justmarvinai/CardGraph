@@ -38,6 +38,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
   `scripts/render-placeholders.mjs`. No copyrighted card images ship.
 - Vitest coverage for chart scales and number/date formatting.
 
+### Fixed
+- Stale Konva layers ghosting under the canvas after a theme or format change:
+  `stage.getLayers()` returns the live child array, so destroying while
+  iterating it skipped a layer.
+- MP4 export could hang forever in browsers that expose `VideoEncoder` without
+  an H.264 encoder behind it.
+- Chart axes no longer extend below zero for price and population data.
+- Gallery previews for template variants pointed at filenames the generator
+  never wrote, so both Price Trend cards fell back to placeholders.
+
 ### Notes
 - Everything runs client-side. Uploaded card images never leave the browser.
 - Planning documents: `CLAUDE.md`, `ROADMAP.md`, `USER_QUESTIONS.md`,

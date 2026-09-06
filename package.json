@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "previews": "node scripts/render-previews.mjs",
     "placeholders": "node scripts/render-placeholders.mjs",
-    "test:export": "node scripts/e2e-export.mjs"
+    "test:export": "node scripts/e2e-export.mjs",
+    "test:editor": "node scripts/e2e-editor.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

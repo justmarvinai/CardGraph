@@ -215,9 +215,12 @@ export function EditorCanvas({
         `none-${assetVersion}`,
     };
 
-    stage.getLayers().forEach((layer) => {
+    // `getLayers()` hands back the stage's live child array, so destroying while
+    // iterating it splices entries out from under the loop and leaves an old
+    // content layer behind — which then ghosts under the new one.
+    for (const layer of [...stage.getLayers()]) {
       if (layer !== ui) layer.destroy();
-    });
+    }
 
     const background = buildBackgroundLayer(scene);
     const content = buildContentLayer(scene);

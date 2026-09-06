@@ -32,6 +32,8 @@ look finished out of the box".
 5. **Update `CHANGELOG.md`** in the same commit as any user-visible change.
 6. **Templates must look outstanding without edits.** A user who only uploads a
    card image and types the numbers must get a graphic as good as the reference.
+   At the same time **everything must be changeable** — every colour, font, size
+   and position. Defaults are opinions, not constraints.
 7. **Never 1:1 copy the reference images.** Same look and feel, same structure,
    own execution (spacing, fonts, glow, chart rendering are ours).
 8. **No backend, no secrets, no server-side rendering of user data.** Uploaded
@@ -115,6 +117,11 @@ CardGraph/
   Changing format re-runs the template layout with the user's content preserved.
 - **Theme**: `dark` (black gradient over blurred card, light text) and `light`
   (white gradient, dark text). Every template must render well in both.
+- **Palette**: every colour a template uses comes from a document-level palette
+  (`accent`, `textPrimary`, `textSecondary`, `positive`, `negative`, `panel`,
+  `overlay`, `divider`). The user can change any of them, per document, at any
+  time; per-node colour overrides sit on top. Lime `#CCFF00` is only the default
+  accent. **Templates never hard-code a colour** — they read `ctx.palette`.
 - **Background pipeline**: main card image → cover-scaled → heavy Gaussian blur
   (pre-rendered once to an offscreen canvas) → gradient overlay per theme.
 - **Animation**: pure function `(t: 0..1) → transform` per preset applied to the

@@ -2,7 +2,12 @@
 
 ## 1. Design language (shared by every template)
 
-Derived from `assets/template_examples/`:
+Derived from `assets/template_examples/`. **These are defaults, not constants.**
+Every colour below is a slot in the document palette that the user can change
+(`accent`, `textPrimary`, `textSecondary`, `positive`, `negative`, `panel`,
+`overlay`, `divider`); templates read `ctx.palette.*` and must never write a
+literal colour. "Lime" throughout this document means "the accent colour, which
+defaults to lime".
 
 | Token | Dark theme | Light theme |
 |---|---|---|
@@ -21,6 +26,11 @@ Derived from `assets/template_examples/`:
 | Chart axis labels | Bebas Neue, `#EDEDED` | Bebas Neue, `#222` |
 | Slab image | contain-fit, drop shadow `0 24px 60px rgba(0,0,0,.55)` | shadow `rgba(0,0,0,.25)` |
 | Safe margin | 5 % of width | same |
+
+Accent presets offered in the UI (plus a free colour picker): Lime `#CCFF00`,
+Cyan `#22D3EE`, Violet `#A78BFA`, Gold `#FFC94A`, Magenta `#FF4D9D`,
+White `#FFFFFF`. Changing the accent restyles headline, set number, prices and
+badges at once; anything the user overrode per node stays untouched.
 
 Fonts to self-host (all OFL): Bebas Neue, Anton (alt headline), Oswald,
 Montserrat, Inter, Poppins, Space Grotesk, Roboto Mono. Users can switch any

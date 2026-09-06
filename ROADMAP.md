@@ -2,31 +2,27 @@
 
 Status legend: ⬜ not started · 🟨 in progress · ✅ done · ⏸ waiting on Director
 
-Development does **not** start until the Director gives the explicit go
-(see `USER_QUESTIONS.md`). Phases are ordered so that `main` is deployable after
-each one. Estimates are rough working sessions, not promises.
+The Director answered all questions and gave the go on 2026-09-06.
+Phases are ordered so that `main` is deployable after each one.
 
 ---
 
-## Phase 0 — Planning  ⏸ (waiting for answers + explicit "go")
+## Phase 0 — Planning  ✅
 
 - ✅ Read the brief and all six reference graphics.
 - ✅ Decide tech stack (`CLAUDE.md` §3).
 - ✅ Define document model, engine, export pipeline (`docs/ARCHITECTURE.md`).
 - ✅ Define template spec and catalogue the six launch templates (`docs/TEMPLATES.md`).
 - ✅ Write `USER_QUESTIONS.md`.
-- ⏸ Director answers questions and says "start".
-
-**Done when:** Director has answered (or accepted the recommended defaults) and
-explicitly approved the start of development.
+- ✅ Director answered all 18 questions and approved the start of development.
 
 ---
 
 ## Phase 1 — Scaffold & foundation  ⬜
 
 - Next.js 15 + TypeScript + Tailwind v4 + pnpm, ESLint/Prettier, Vitest.
-- Design tokens (dark UI, lime accent), base UI primitives (button, input,
-  select, slider, dialog, tooltip, tabs).
+- Design tokens (dark UI, lime accent as *default*), base UI primitives (button,
+  input, select, slider, dialog, tooltip, tabs, colour picker).
 - Self-hosted fonts + font loader.
 - Routes: `/` (placeholder landing), `/app` (gallery shell), `/app/edit/[id]`.
 - Vercel project connected to `main`, first deploy.
@@ -59,6 +55,8 @@ explicitly approved the start of development.
 - Background: cover-scale + heavy blur (pre-rendered offscreen) + theme gradient
   overlay (dark / light), blur amount and overlay strength adjustable.
 - Theme toggle (dark / light) re-styles every node via template tokens.
+- Editable document palette (accent, text, positive, negative, panel, overlay,
+  divider) with presets and a colour picker; per-node colour overrides.
 - Additional small images (logos, icons) anywhere on the canvas.
 
 **Done when:** uploading a card produces the reference-style backdrop in both themes.
@@ -146,6 +144,7 @@ from a fresh upload without touching the canvas manually.
 ## Phase 10 — Polish & QA  ⬜
 
 - Empty states, error states (unsupported file, huge image, export failure).
+- No imprint/privacy pages (Q15): a one-line privacy note in the footer only.
 - Performance pass (large images downscaled on import, blur cached, memoised nodes).
 - Responsive editor (desktop-first; tablet usable; phone shows gallery + "best on desktop").
 - Accessibility pass on UI (focus states, labels, contrast).

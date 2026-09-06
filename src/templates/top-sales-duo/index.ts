@@ -2,7 +2,7 @@ import type { Node } from '@/lib/types';
 import { withAlpha } from '@/lib/palette';
 import { formatCurrency } from '@/lib/format';
 import { badgeNode, dividerNode, imageNode, softShadow, textNode } from '../_shared/nodes';
-import { headline, metrics, str, num } from '../_shared/layout';
+import { headline, metrics, str, num, dateCaption } from '../_shared/layout';
 import type { BuildContext, Template } from '../types';
 
 /** Modelled on `top_card_sales_of_month_day_week_year.jpg`. */
@@ -101,14 +101,16 @@ function build(ctx: BuildContext): Node[] {
       }),
     );
 
-    const rankSize = footerHeight * 0.2;
-    const priceSize = footerHeight * 0.36;
+    const rankSize = footerHeight * 0.17;
+    const priceSize = footerHeight * 0.34;
+    const rankY = footerTop + footerHeight * 0.09;
+    const priceY = rankY + rankSize * 1.5;
     nodes.push(
       textNode({
         id: `rank${suffix}`,
         name: `${side === 'left' ? 'Left' : 'Right'} rank`,
         x,
-        y: footerTop + footerHeight * 0.1,
+        y: rankY,
         width: columnWidth,
         height: rankSize * 1.4,
         color: palette.textPrimary,
@@ -128,7 +130,7 @@ function build(ctx: BuildContext): Node[] {
         id: `price${suffix}`,
         name: `${side === 'left' ? 'Left' : 'Right'} price`,
         x: x + columnWidth * 0.02,
-        y: footerTop + footerHeight * 0.1 + rankSize * 1.7,
+        y: priceY,
         width: columnWidth * 0.96,
         height: priceSize * 1.2,
         color: palette.accent,
@@ -147,17 +149,17 @@ function build(ctx: BuildContext): Node[] {
       badgeNode({
         id: `source${suffix}`,
         name: `${side === 'left' ? 'Left' : 'Right'} source`,
-        x,
-        y: footerTop + footerHeight * 0.1 + rankSize * 1.7 + priceSize * 1.28,
-        width: columnWidth,
-        height: footerHeight * 0.15,
+        x: x + columnWidth * 0.05,
+        y: priceY + priceSize * 1.22,
+        width: columnWidth * 0.9,
+        height: footerHeight * 0.13,
         color: palette.textPrimary,
         kind: str(data, `${side}BadgeKind`, 'builtin') as 'builtin' | 'text' | 'image',
         badgeId: str(data, `${side}Badge`, 'fanatics'),
         text: str(data, `${side}BadgeText`),
-        caption: str(data, `${side}Caption`),
+        caption: dateCaption(data, `${side}Caption`, formatting),
         captionColor: palette.textSecondary,
-        captionFontSize: footerHeight * 0.13,
+        captionFontSize: footerHeight * 0.115,
         align: 'center',
       }),
     );
@@ -264,5 +266,16 @@ export const topSalesDuo: Template = {
     leftPriceText: formatCurrency(num(data, 'leftPrice'), formatting),
     rightPriceText: formatCurrency(num(data, 'rightPrice'), formatting),
   }),
+  nodeFields: {
+    eyebrow: 'eyebrow',
+    headline: 'leftTitle',
+    'headline-right': 'rightTitle',
+    subtitle: 'leftSubtitle',
+    'subtitle-right': 'rightSubtitle',
+    rank: 'leftRank',
+    'rank-right': 'rightRank',
+    price: 'leftPriceText',
+    'price-right': 'rightPriceText',
+  },
   build,
 };

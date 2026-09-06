@@ -123,9 +123,9 @@ export function chartNode(
     showXAxis: true,
     showGrid: false,
     axisFontFamily: 'Bebas Neue',
-    axisFontSize: node.width * 0.062,
+    axisFontSize: node.width * 0.055,
     tickCount: 6,
-    padding: { top: 0.07, right: 0.05, bottom: 0.13, left: 0.2 },
+    padding: { top: 0.07, right: 0.05, bottom: 0.13, left: 0.18 },
     ...node,
   };
 }

@@ -50,8 +50,20 @@ export const saleComparison: Template = {
     return {
       leftPriceText: formatCurrency(left, formatting),
       rightPriceText: formatCurrency(right, formatting),
-      changeText: formatPercent(percentChange(left, right), formatting),
+      changeText: `${percentChange(left, right) >= 0 ? '▲ ' : '▼ '}${formatPercent(percentChange(left, right), formatting)}`,
     };
+  },
+  nodeFields: {
+    headline: 'title',
+    'subtitle-grade': 'grade',
+    'subtitle-set': 'set',
+    'subtitle-number': 'cardNumber',
+    'stat-left-label': 'leftLabel',
+    'stat-left-value': 'leftPriceText',
+    'stat-change-label': 'changeLabel',
+    'stat-change-value': 'changeText',
+    'stat-right-label': 'rightLabel',
+    'stat-right-value': 'rightPriceText',
   },
   build: (ctx) =>
     buildComparison(ctx, {

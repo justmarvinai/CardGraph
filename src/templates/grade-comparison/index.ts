@@ -52,6 +52,17 @@ export const gradeComparison: Template = {
       changeText: `${diff >= 0 ? '+' : '−'}${formatPercent(Math.abs(diff), formatting, 0)}`,
     };
   },
+  nodeFields: {
+    headline: 'title',
+    'caption-left': 'leftCaption',
+    'caption-right': 'rightCaption',
+    'stat-left-label': 'leftLabel',
+    'stat-left-value': 'leftPriceText',
+    'stat-change-label': 'changeLabel',
+    'stat-change-value': 'changeText',
+    'stat-right-label': 'rightLabel',
+    'stat-right-value': 'rightPriceText',
+  },
   build: (ctx) =>
     buildComparison(ctx, {
       header: 'captions',

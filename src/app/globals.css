@@ -1,0 +1,152 @@
+@import 'tailwindcss';
+
+/* ── Fonts ────────────────────────────────────────────────────────────────
+   Self-hosted so the canvas can guarantee they are loaded before it paints. */
+@font-face { font-family: 'Bebas Neue'; src: url('/fonts/bebas-neue-400.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Anton'; src: url('/fonts/anton-400.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Oswald'; src: url('/fonts/oswald-var.woff2') format('woff2'); font-weight: 400 700; font-display: block; }
+@font-face { font-family: 'Montserrat'; src: url('/fonts/montserrat-var.woff2') format('woff2'); font-weight: 400 800; font-display: block; }
+@font-face { font-family: 'Inter'; src: url('/fonts/inter-var.woff2') format('woff2'); font-weight: 400 800; font-display: block; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/poppins-400.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/poppins-600.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/poppins-800.woff2') format('woff2'); font-weight: 800; font-display: block; }
+@font-face { font-family: 'Space Grotesk'; src: url('/fonts/space-grotesk-var.woff2') format('woff2'); font-weight: 400 700; font-display: block; }
+@font-face { font-family: 'Roboto Mono'; src: url('/fonts/roboto-mono-var.woff2') format('woff2'); font-weight: 400 700; font-display: block; }
+
+/* ── Design tokens ────────────────────────────────────────────────────────
+   The app chrome. Document colours live in the document palette, not here. */
+@theme {
+  --color-ink-950: #08090a;
+  --color-ink-900: #0b0c0e;
+  --color-ink-850: #101113;
+  --color-ink-800: #141517;
+  --color-ink-700: #1b1d20;
+  --color-ink-600: #26282c;
+  --color-ink-500: #383b40;
+  --color-ink-400: #5c6169;
+  --color-ink-300: #8b919b;
+  --color-ink-200: #b8bec7;
+  --color-ink-100: #e6e9ee;
+
+  --color-accent: #ccff00;
+  --color-accent-dim: #a8d400;
+  --color-accent-glow: #ccff0033;
+
+  --color-positive: #2ee59d;
+  --color-negative: #ff4d4d;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Anton', 'Bebas Neue', ui-sans-serif, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  --radius-panel: 16px;
+
+  --shadow-panel: 0 24px 60px -24px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 20px 50px -12px rgb(0 0 0 / 0.75);
+}
+
+:root {
+  color-scheme: dark;
+  --header-h: 56px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-ink-950);
+  color: var(--color-ink-100);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #000;
+}
+
+/* Focus rings only where a keyboard user needs them. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+.cg-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+}
+.cg-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.cg-scroll::-webkit-scrollbar-track { background: transparent; }
+.cg-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-ink-600);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.cg-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--color-ink-500); background-clip: content-box; }
+
+/* ── Reusable surfaces ──────────────────────────────────────────────────── */
+.cg-panel {
+  background: color-mix(in oklab, var(--color-ink-850) 92%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.cg-hairline { border-color: rgb(255 255 255 / 0.07); }
+
+/* The transparency checker behind the canvas stage. */
+.cg-canvas-bg {
+  background-color: #0d0e10;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgb(204 255 0 / 0.05), transparent 60%),
+    linear-gradient(45deg, rgb(255 255 255 / 0.015) 25%, transparent 25%, transparent 75%, rgb(255 255 255 / 0.015) 75%),
+    linear-gradient(45deg, rgb(255 255 255 / 0.015) 25%, transparent 25%, transparent 75%, rgb(255 255 255 / 0.015) 75%);
+  background-size: 100% 100%, 28px 28px, 28px 28px;
+  background-position: 0 0, 0 0, 14px 14px;
+}
+
+/* Landing-page ambience. */
+.cg-aurora {
+  background:
+    radial-gradient(60rem 40rem at 15% -10%, rgb(204 255 0 / 0.14), transparent 60%),
+    radial-gradient(50rem 35rem at 90% 0%, rgb(46 229 157 / 0.1), transparent 60%),
+    radial-gradient(70rem 50rem at 50% 120%, rgb(120 80 255 / 0.1), transparent 60%);
+}
+
+@keyframes cg-float {
+  0%, 100% { transform: translateY(0) rotate(-0.6deg); }
+  50% { transform: translateY(-14px) rotate(0.6deg); }
+}
+.cg-float { animation: cg-float 6s ease-in-out infinite; }
+
+@keyframes cg-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.cg-rise { animation: cg-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-float, .cg-rise { animation: none; }
+}
+
+/* Radix animation hooks. */
+@keyframes cg-in { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: none; } }
+[data-state='open'].cg-anim { animation: cg-in 0.14s ease-out; }
+
+input[type='range'] { accent-color: var(--color-accent); }
+
+input[type='color'] {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='color']::-webkit-color-swatch-wrapper { padding: 0; }
+input[type='color']::-webkit-color-swatch { border: 1px solid rgb(255 255 255 / 0.15); border-radius: 8px; }
+input[type='color']::-moz-color-swatch { border: 1px solid rgb(255 255 255 / 0.15); border-radius: 8px; }

@@ -63,6 +63,7 @@ function build(ctx: BuildContext): Node[] {
     ...inlineRun(
       [
         { id: 'subtitle-grade', text: str(data, 'grade'), color: palette.textPrimary },
+        { id: 'subtitle-dot', text: str(data, 'grade') && str(data, 'set') ? '·' : '', color: palette.textSecondary },
         { id: 'subtitle-set', text: str(data, 'set'), color: palette.textPrimary },
         {
           id: 'subtitle-number',
@@ -141,14 +142,14 @@ function build(ctx: BuildContext): Node[] {
       panelRadius: Math.min(chart.w, chart.h) * 0.07,
       gridColor: palette.divider,
       axisColor: palette.textPrimary,
-      axisFontSize: Math.min(chart.w, chart.h * 1.1) * 0.062,
+      axisFontSize: Math.min(chart.w, chart.h * 1.1) * 0.055,
       strokeWidth: Math.max(3, chart.w * 0.012),
       glow: chart.w * 0.035,
       padding: {
         top: 0.08,
         right: 0.06,
         bottom: tall ? 0.16 : 0.13,
-        left: tall ? 0.14 : 0.22,
+        left: tall ? 0.13 : 0.19,
       },
     }),
   );
@@ -178,9 +179,8 @@ function build(ctx: BuildContext): Node[] {
     {
       id: 'stat-change',
       label: str(data, 'changeLabel', 'PRICE CHANGE'),
-      value: str(data, 'changeText') || formatPercent(change, formatting),
+      value: str(data, 'changeText') || `${rising ? '▲ ' : '▼ '}${formatPercent(change, formatting)}`,
       valueColor: changeColor,
-      prefix: rising ? '▲ ' : '▼ ',
     },
     {
       id: 'stat-end',
@@ -224,7 +224,7 @@ function derive(
   return {
     startPriceText: formatCurrency(first.value, formatting),
     endPriceText: formatCurrency(last.value, formatting),
-    changeText: formatPercent(change, formatting),
+    changeText: `${change >= 0 ? '▲ ' : '▼ '}${formatPercent(change, formatting)}`,
     changeLabel: days ? `${spanLabel(days)} CHANGE` : 'PRICE CHANGE',
     startLabel: formatDate(first.label, formatting),
     endLabel: formatDate(last.label, formatting),
@@ -322,5 +322,17 @@ export const priceTrend: Template = {
     endCaption: '',
   },
   derive,
+  nodeFields: {
+    headline: 'title',
+    'subtitle-grade': 'grade',
+    'subtitle-set': 'set',
+    'subtitle-number': 'cardNumber',
+    'stat-start-label': 'startLabel',
+    'stat-start-value': 'startPriceText',
+    'stat-change-label': 'changeLabel',
+    'stat-change-value': 'changeText',
+    'stat-end-label': 'endLabel',
+    'stat-end-value': 'endPriceText',
+  },
   build,
 };

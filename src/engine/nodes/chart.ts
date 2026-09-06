@@ -6,6 +6,15 @@ import { withAlpha } from '@/lib/palette';
 import { fontStack } from '../fonts';
 import type { RenderContext } from '../context';
 
+let labelProbe: Konva.Text | null = null;
+
+function measureAxisLabel(text: string, family: string, size: number): number {
+  if (!text) return 0;
+  if (!labelProbe) labelProbe = new Konva.Text({});
+  labelProbe.setAttrs({ text, fontFamily: fontStack(family), fontSize: size, fontStyle: '700' });
+  return labelProbe.getTextWidth();
+}
+
 /** Direction of the series — drives the automatic curve colour. */
 export function chartTrend(node: ChartNode): 'up' | 'down' | 'flat' {
   if (node.rows.length < 2) return 'flat';
@@ -138,13 +147,22 @@ export function renderChart(node: ChartNode, ctx: RenderContext): Konva.Group {
 
   if (node.showXAxis && points.length) {
     const labels = xLabels(node);
-    const minGap = node.axisFontSize * 1.9;
-    let lastX = -Infinity;
+    // Thin the labels on an even stride rather than greedily: dropping every
+    // second one reads as a rhythm, dropping them as they happen to collide
+    // reads as a mistake.
+    const widest = labels.reduce(
+      (max, label) =>
+        Math.max(max, measureAxisLabel(label.text, node.axisFontFamily, node.axisFontSize)),
+      0,
+    );
+    const spacing = points.length > 1 ? points[1].x - points[0].x : plot.width;
+    const stride = Math.max(1, Math.ceil((widest * 1.2) / Math.max(1, spacing)));
     labels.forEach((label, i) => {
       if (!label.text) return;
+      if (i % stride !== 0 && i !== labels.length - 1) return;
+      // Never let the kept last label sit on top of its neighbour.
+      if (i === labels.length - 1 && i % stride !== 0 && (i - (i % stride)) === i - 1) return;
       const x = points[i].x;
-      if (x - lastX < minGap && i !== labels.length - 1) return;
-      lastX = x;
       const box = node.axisFontSize * 3;
       group.add(
         new Konva.Text({

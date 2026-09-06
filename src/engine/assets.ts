@@ -46,6 +46,11 @@ export async function loadImage(assetId: string): Promise<HTMLImageElement | nul
   return promise;
 }
 
+/** Puts an already-decoded image into the cache under a known id. */
+export function registerImage(assetId: string, image: HTMLImageElement): void {
+  images.set(assetId, image);
+}
+
 export function decode(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();

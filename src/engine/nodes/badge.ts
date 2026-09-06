@@ -72,10 +72,22 @@ export function renderBadge(node: BadgeNode, ctx: RenderContext): Konva.Group {
     cursor += caption.getTextWidth() + node.captionFontSize * 0.35;
   }
 
-  // Align the assembled row inside the node's own width.
+  // A mark plus a long date can outgrow its column, and a source line running
+  // into its neighbour looks broken — so shrink the whole row to fit instead.
+  const scale = cursor > node.width && cursor > 0 ? node.width / cursor : 1;
+  const scaledWidth = cursor * scale;
   const offset =
-    node.align === 'center' ? (node.width - cursor) / 2 : node.align === 'right' ? node.width - cursor : 0;
-  const inner = new Konva.Group({ x: offset });
+    node.align === 'center'
+      ? (node.width - scaledWidth) / 2
+      : node.align === 'right'
+        ? node.width - scaledWidth
+        : 0;
+  const inner = new Konva.Group({
+    x: offset,
+    scaleX: scale,
+    scaleY: scale,
+    y: (markHeight * (1 - scale)) / 2,
+  });
   parts.forEach((part) => inner.add(part as Konva.Shape));
   group.add(inner);
 

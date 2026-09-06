@@ -2,7 +2,7 @@ import type { Node } from '@/lib/types';
 import { withAlpha } from '@/lib/palette';
 import { formatCurrency, formatPercent, percentChange } from '@/lib/format';
 import { dividerNode, imageNode, softShadow, textNode } from './nodes';
-import { headline, inlineRun, metrics, statsRow, str, num, type StatColumn } from './layout';
+import { headline, inlineRun, metrics, statsRow, str, num, dateCaption, type StatColumn } from './layout';
 import type { BuildContext } from '../types';
 
 /**
@@ -52,6 +52,7 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
       ...inlineRun(
         [
           { id: 'subtitle-grade', text: str(data, 'grade'), color: palette.textPrimary },
+          { id: 'subtitle-dot', text: str(data, 'grade') && str(data, 'set') ? '·' : '', color: palette.textSecondary },
           { id: 'subtitle-set', text: str(data, 'set'), color: palette.textPrimary },
           { id: 'subtitle-number', text: str(data, 'cardNumber'), color: palette.accent, fontWeight: 800 },
         ].filter((p) => p.text),
@@ -155,7 +156,7 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
         kind: str(data, 'leftBadgeKind', 'builtin') as 'builtin' | 'text' | 'image',
         badgeId: str(data, 'leftBadge', 'ebay'),
         text: str(data, 'leftBadgeText'),
-        caption: str(data, 'leftCaptionDate'),
+        caption: dateCaption(data, 'leftCaptionDate', formatting),
       },
     },
     {
@@ -165,14 +166,13 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
         str(data, 'changeText') ||
         (options.changeMode === 'difference'
           ? `${rising ? '+' : '−'}${formatPercent(diff, formatting, 0)}`
-          : formatPercent(diff, formatting)),
+          : `${rising ? '▲ ' : '▼ '}${formatPercent(diff, formatting)}`),
       valueColor:
         options.changeMode === 'difference'
           ? palette.textPrimary
           : rising
             ? palette.positive
             : palette.negative,
-      prefix: options.changeMode === 'difference' ? '' : rising ? '▲ ' : '▼ ',
     },
     {
       id: 'stat-right',
@@ -183,7 +183,7 @@ export function buildComparison(ctx: BuildContext, options: ComparisonOptions): 
         kind: str(data, 'rightBadgeKind', 'builtin') as 'builtin' | 'text' | 'image',
         badgeId: str(data, 'rightBadge', 'fanatics'),
         text: str(data, 'rightBadgeText'),
-        caption: str(data, 'rightCaptionDate'),
+        caption: dateCaption(data, 'rightCaptionDate', formatting),
       },
     },
   ];

@@ -53,8 +53,6 @@ interface EditorState {
   reorderNode: (id: string, direction: 'front' | 'back' | 'forward' | 'backward') => void;
 
   bumpAssets: () => void;
-  nodes: () => Node[];
-  palette: () => Palette;
 }
 
 function touch(doc: CardGraphDocument): CardGraphDocument {
@@ -74,7 +72,7 @@ function scheduleSave(doc: CardGraphDocument) {
 
 export const useEditor = create<EditorState>()(
   temporal(
-    (set, get) => ({
+    (set) => ({
       doc: createDocument('price-trend', 'up'),
       selection: [],
       assetVersion: 0,
@@ -347,9 +345,6 @@ export const useEditor = create<EditorState>()(
         }),
 
       bumpAssets: () => set((state) => ({ assetVersion: state.assetVersion + 1 })),
-
-      nodes: () => resolveNodes(get().doc),
-      palette: () => resolvePalette(get().doc.theme, get().doc.palette),
     }),
     {
       limit: 100,

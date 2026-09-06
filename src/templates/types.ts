@@ -75,6 +75,12 @@ export interface Template {
    */
   derive?: (data: Record<string, unknown>, formatting: FormattingSettings) => Record<string, unknown>;
   build: (ctx: BuildContext) => Node[];
+  /**
+   * Maps a text node to the content field it came from, so editing text
+   * directly on the canvas updates the Content panel instead of drifting
+   * from it.
+   */
+  nodeFields?: Record<string, string>;
 }
 
 export type DocumentSeed = Pick<CardGraphDocument, 'templateId' | 'variantId' | 'data'>;

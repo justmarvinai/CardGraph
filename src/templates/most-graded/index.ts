@@ -2,7 +2,7 @@ import type { Node } from '@/lib/types';
 import { withAlpha } from '@/lib/palette';
 import { formatCurrency, formatNumber } from '@/lib/format';
 import { imageNode, softShadow, textNode } from '../_shared/nodes';
-import { headline, inlineRun, metrics, statsRow, str, num, type StatColumn } from '../_shared/layout';
+import { headline, inlineRun, metrics, statsRow, str, num, dateCaption, type StatColumn } from '../_shared/layout';
 import type { BuildContext, Template } from '../types';
 
 /** Modelled on `most_graded_cards.jpg`. */
@@ -20,7 +20,7 @@ function build(ctx: BuildContext): Node[] {
       id: 'watermark',
       name: 'Grade watermark',
       x: m.left - watermarkSize * 0.08,
-      y: -watermarkSize * 0.16,
+      y: -watermarkSize * 0.05,
       width: watermarkSize * 2,
       height: watermarkSize * 1.1,
       color: withAlpha(palette.textPrimary, ctx.theme === 'dark' ? 0.09 : 0.1),
@@ -55,6 +55,7 @@ function build(ctx: BuildContext): Node[] {
     ...inlineRun(
       [
         { id: 'subtitle-year', text: str(data, 'year'), color: palette.accent, fontWeight: 700 },
+        { id: 'subtitle-dot', text: str(data, 'year') && str(data, 'set') ? '·' : '', color: palette.textSecondary },
         { id: 'subtitle-set', text: str(data, 'set'), color: palette.textPrimary },
         { id: 'subtitle-number', text: str(data, 'cardNumber'), color: palette.accent, fontWeight: 800 },
       ].filter((p) => p.text),
@@ -113,7 +114,7 @@ function build(ctx: BuildContext): Node[] {
         kind: str(data, 'saleBadgeKind', 'builtin') as 'builtin' | 'text' | 'image',
         badgeId: str(data, 'saleBadge', 'ebay'),
         text: str(data, 'saleBadgeText'),
-        caption: str(data, 'saleCaption'),
+        caption: dateCaption(data, 'saleCaption', formatting),
       },
     },
   ];
@@ -174,5 +175,18 @@ export const mostGraded: Template = {
     popText: formatNumber(num(data, 'pop'), formatting),
     saleText: formatCurrency(num(data, 'sale'), formatting),
   }),
+  nodeFields: {
+    headline: 'title',
+    watermark: 'watermark',
+    'subtitle-year': 'year',
+    'subtitle-set': 'set',
+    'subtitle-number': 'cardNumber',
+    'stat-total-label': 'totalLabel',
+    'stat-total-value': 'totalText',
+    'stat-pop-label': 'popLabel',
+    'stat-pop-value': 'popText',
+    'stat-sale-label': 'saleLabel',
+    'stat-sale-value': 'saleText',
+  },
   build,
 };

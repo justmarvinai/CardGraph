@@ -1,6 +1,6 @@
-import Konva from 'konva';
 import type { Node, TextNode } from '@/lib/types';
 import { fontStack } from '@/engine/fonts';
+import { formatDate } from '@/lib/format';
 import { textNode, dividerNode, badgeNode, glow } from './nodes';
 import { withAlpha } from '@/lib/palette';
 import type { BuildContext } from '../types';
@@ -74,18 +74,26 @@ interface RunOptions {
   gap?: number;
 }
 
+let measureContext: CanvasRenderingContext2D | null = null;
+
+/**
+ * Text measurement via the plain 2D context rather than Konva: templates stay
+ * independent of the renderer, which also keeps them importable on the server.
+ */
 function measure(text: string, family: string, weight: number, size: number, tracking: number): number {
   if (!text) return 0;
-  const probe = new Konva.Text({
-    text,
-    fontFamily: fontStack(family),
-    fontSize: size,
-    fontStyle: String(weight),
-    letterSpacing: tracking * size,
-  });
-  const w = probe.getTextWidth();
-  probe.destroy();
-  return w;
+  if (typeof document === 'undefined') {
+    // Server-side (metadata, static params) never paints; a rough estimate is
+    // enough to keep `build()` total.
+    return text.length * size * 0.52 + tracking * size * Math.max(0, text.length - 1);
+  }
+  if (!measureContext) {
+    measureContext = document.createElement('canvas').getContext('2d');
+  }
+  if (!measureContext) return text.length * size * 0.52;
+  measureContext.font = `${weight} ${size}px ${fontStack(family)}`;
+  const width = measureContext.measureText(text).width;
+  return width + tracking * size * Math.max(0, text.length - 1);
 }
 
 /**
@@ -176,8 +184,6 @@ export interface StatColumn {
   label: string;
   value: string;
   valueColor: string;
-  /** Prefix drawn before the value in the same colour, e.g. an arrow. */
-  prefix?: string;
   badge?: {
     kind: 'builtin' | 'text' | 'image';
     badgeId: string;
@@ -227,7 +233,7 @@ export function statsRow(ctx: BuildContext, m: Metrics, options: StatsRowOptions
   const valueSize = height * 0.36;
   const badgeSize = height * 0.15;
   const colWidth = width / columns.length;
-  const padTop = height * 0.14;
+  const padTop = height * 0.12;
 
   columns.forEach((column, i) => {
     const cx = x + colWidth * i;
@@ -252,8 +258,7 @@ export function statsRow(ctx: BuildContext, m: Metrics, options: StatsRowOptions
       }),
     );
 
-    const valueY = y + padTop + labelSize * 1.75;
-    const valueText = column.prefix ? `${column.prefix}${column.value}` : column.value;
+    const valueY = y + padTop + labelSize * 1.7;
     nodes.push(
       textNode({
         id: `${column.id}-value`,
@@ -263,7 +268,7 @@ export function statsRow(ctx: BuildContext, m: Metrics, options: StatsRowOptions
         width: colWidth * 0.94,
         height: valueSize * 1.2,
         color: column.valueColor,
-        text: valueText,
+        text: column.value,
         fontFamily: 'Montserrat',
         fontWeight: 800,
         fontSize: valueSize,
@@ -280,7 +285,7 @@ export function statsRow(ctx: BuildContext, m: Metrics, options: StatsRowOptions
           id: `${column.id}-badge`,
           name: `${column.label || 'Stat'} source`,
           x: cx,
-          y: valueY + valueSize * 1.24,
+          y: valueY + valueSize * 1.2,
           width: colWidth,
           height: badgeSize,
           color: palette.textPrimary,
@@ -328,6 +333,17 @@ export function statsRow(ctx: BuildContext, m: Metrics, options: StatsRowOptions
   }
 
   return nodes;
+}
+
+/** " · AUGUST 6, 2026" next to a source mark, from a stored `YYYY-MM-DD`. */
+export function dateCaption(
+  data: Record<string, unknown>,
+  key: string,
+  formatting: BuildContext['formatting'],
+): string {
+  const raw = str(data, key);
+  if (!raw) return '';
+  return ` · ${formatDate(raw, formatting)}`;
 }
 
 /** Reads a string field with a fallback, so `build()` never renders "undefined". */

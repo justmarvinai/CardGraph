@@ -38,6 +38,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
   `scripts/render-placeholders.mjs`. No copyrighted card images ship.
 - Vitest coverage for chart scales and number/date formatting.
 
+### Security
+- Next.js 15.1.7 → 15.5.25. Vercel refuses to deploy Next versions with known
+  advisories, which is what "Vulnerable version of Next.js detected" meant.
+- postcss pinned to `^8.5.28` via a pnpm override: Next 15.5 still resolves
+  8.4.31, which carries a path-traversal advisory. postcss 8.x is semver-stable,
+  so lifting the whole tree is safe.
+- Dev tooling refreshed to clear the remaining advisories: vitest 3.2.7 → 5.0.0,
+  playwright 1.49.1 → 1.63.0. `pnpm audit` is now clean.
+
 ### Changed
 - The app now builds as a **static export** (`output: 'export'` → `out/`).
   CardGraph has no server-side anything, so the deploy is plain files with no

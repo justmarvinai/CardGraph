@@ -169,6 +169,15 @@ case the WebM fallback now covers.
 
 ---
 
+## Known follow-ups
+
+- `pnpm lint` still uses `next lint`, which Next 15.5 deprecates and Next 16
+  removes. It works today; migrating to the ESLint CLI
+  (`npx @next/codemod@canary next-lint-to-eslint-cli .`) is a small job to do
+  before any move to Next 16.
+- Keep an eye on Next.js advisories: Vercel blocks deploys on flagged versions,
+  so a bump may be forced at any time. `pnpm audit` catches it locally.
+
 ## Backlog (not planned for 1.0 — needs Director decision)
 
 - Automatic background removal for raw card photos (client-side model, heavy download).
